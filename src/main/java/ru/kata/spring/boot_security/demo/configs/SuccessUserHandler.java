@@ -19,8 +19,8 @@ public class SuccessUserHandler implements AuthenticationSuccessHandler {
 
     public SuccessUserHandler() {
         roleRedirectMap = new HashMap<>();
-        roleRedirectMap.put("ROLE_ADMIN", "/admin");
-        roleRedirectMap.put("ROLE_USER", "/user");
+        roleRedirectMap.put("ROLE_ADMIN", "/users");
+        roleRedirectMap.put("ROLE_USER", "/users");
     }
 
     @Override
@@ -28,9 +28,9 @@ public class SuccessUserHandler implements AuthenticationSuccessHandler {
         Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
 
         if (roles.contains("ROLE_ADMIN")) {
-            httpServletResponse.sendRedirect("/admin");
+            httpServletResponse.sendRedirect("/users");
         } else if (roles.contains("ROLE_USER")) {
-            httpServletResponse.sendRedirect("/user");
+            httpServletResponse.sendRedirect("/users");
         } else {
             httpServletResponse.sendRedirect("/");
         }

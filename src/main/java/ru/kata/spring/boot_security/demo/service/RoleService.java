@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface RoleService {
 
-    Role add(Role role);
+    void add(Role role);
 
     List<Role> findAll();
 

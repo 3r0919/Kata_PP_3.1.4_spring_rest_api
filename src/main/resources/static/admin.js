@@ -1,5 +1,5 @@
-const url = 'http://localhost:8081/admin/users/';
-const urlRoles = 'http://localhost:8081/admin/roles/';
+const url = 'http://localhost:8081/admin/users';
+const urlRoles = 'http://localhost:8081/admin/roles';
 const container = document.querySelector('.usersTbody');
 const newUserForm = document.getElementById('newUserForm');
 const editUserForm = document.getElementById('editUserForm');
@@ -36,12 +36,9 @@ let rolesArr = [];
 const renderUsers = (users) => {
     users.forEach(user => {
         let roles = '';
-        user.roles.forEach(
-            role => {
-                r = role.name.substring(5);
-                roles += r + ' ';
-            }
-        );
+        user.roles.forEach(role => {
+            roles += role.name.substring(5) + ' ';
+        });
         result += `
             <tr>
                 <td>${user.id}</td>
@@ -49,116 +46,97 @@ const renderUsers = (users) => {
                 <td>${user.lastName}</td>
                 <td>${user.age}</td>
                 <td>${user.email}</td>
-                <td>
-                 ${roles}
-                </td>
+                <td>${roles}</td>
                 <td><a class="btnEdit btn btn-sm btn-info text-white">Edit</a></td>
                 <td><a class="btnDelete btn btn-danger btn-sm">Delete</a></td>
             </tr>
-            `
-    })
+        `;
+    });
     container.innerHTML = result;
-}
+};
 
 const renderRoles = (roles) => {
-    rolesOptions = '';
+    let rolesOptions = '';
     roles.forEach(role => {
-        rolesOptions += `
-            <option value = ${role.id}>${role.name.substring(5)}</option>
-            `
+        rolesOptions += `<option value="${role.id}">${role.name.substring(5)}</option>`;
         rolesArr.push(role);
-    })
+    });
     newRoles.innerHTML = rolesOptions;
     editRoles.innerHTML = rolesOptions;
     delRoles.innerHTML = rolesOptions;
-}
-
+};
 
 fetch(url)
     .then(res => res.json())
     .then(data => renderUsers(data))
     .catch(error => console.log(error));
 
-var allRoles;
-
 fetch(urlRoles)
     .then(res => res.json())
-    .then(data => {
-        allRoles = data;
-        renderRoles(allRoles)
-    });
-
+    .then(data => renderRoles(data))
+    .catch(error => console.log(error));
 
 const refreshListOfUsers = () => {
     fetch(url)
         .then(res => res.json())
         .then(data => {
             result = '';
-            renderUsers(data)
+            renderUsers(data);
         })
-}
+        .catch(error => console.log(error));
+};
 
 const on = (element, event, selector, handler) => {
     element.addEventListener(event, e => {
         if (e.target.closest(selector)) {
-            handler(e)
+            handler(e);
         }
-    })
-}
-
-
+    });
+};
 
 on(document, 'click', '.btnDelete', e => {
-    const row = e.target.parentNode.parentNode;
-    idForm = row.children[0].innerHTML;
-    const firstNameForm = row.children[1].innerHTML;
-    const lastNameForm = row.children[2].innerHTML;
-    const ageForm = row.children[3].innerHTML;
-    const emailForm = row.children[4].innerHTML;
+    const row = e.target.closest('tr');
+    const id = row.cells[0].innerHTML;
+    const firstName = row.cells[1].innerHTML;
+    const lastName = row.cells[2].innerHTML;
+    const age = row.cells[3].innerHTML;
+    const email = row.cells[4].innerHTML;
 
-    delId.value = idForm;
-    delFirstName.value = firstNameForm;
-    delLastName.value = lastNameForm;
-    delAge.value = ageForm;
-    delEmail.value = emailForm;
+    delId.value = id;
+    delFirstName.value = firstName;
+    delLastName.value = lastName;
+    delAge.value = age;
+    delEmail.value = email;
     deleteUserModal.show();
-})
-
-
+});
 
 let idForm = 0;
 on(document, 'click', '.btnEdit', e => {
-    const row = e.target.parentNode.parentNode;
-    idForm = row.children[0].innerHTML;
-    const firstNameForm = row.children[1].innerHTML;
-    const lastNameForm = row.children[2].innerHTML;
-    const ageForm = row.children[3].innerHTML;
-    const emailForm = row.children[4].innerHTML;
+    const row = e.target.closest('tr');
+    const id = row.cells[0].innerHTML;
+    const firstName = row.cells[1].innerHTML;
+    const lastName = row.cells[2].innerHTML;
+    const age = row.cells[3].innerHTML;
+    const email = row.cells[4].innerHTML;
 
-    editId.value = idForm;
-    editFirstName.value = firstNameForm;
-    editLastName.value = lastNameForm;
-    editAge.value = ageForm;
-    editEmail.value = emailForm;
-    editPassword.value = ''
+    editId.value = id;
+    editFirstName.value = firstName;
+    editLastName.value = lastName;
+    editAge.value = age;
+    editEmail.value = email;
+    editPassword.value = '';
     editRoles.options.selectedIndex = -1;
     editUserModal.show();
-
-})
-
-
+});
 
 btnCreate.addEventListener('click', () => {
-    newFirstName.value = ''
+    newFirstName.value = '';
     newLastName.value = '';
     newAge.value = '';
     newEmail.value = '';
-    newPassword.value = ''
+    newPassword.value = '';
     newRoles.options.selectedIndex = -1;
 });
-
-
-
 
 deleteUserForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -168,107 +146,86 @@ deleteUserForm.addEventListener('submit', (e) => {
             'Content-type': 'application/json; charset=UTF-8'
         },
     })
-        .then(res => res.json())
-        .catch(err => console.log(err))
-        .then(refreshListOfUsers);
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            } else {
+                throw new Error('Failed to delete user');
+            }
+        })
+        .then(refreshListOfUsers)
+        .catch(err => console.log(err));
     deleteUserModal.hide();
 });
 
-
-
 newUserForm.addEventListener('submit', (e) => {
-    let rolesJ = [];
     e.preventDefault();
-    const selectedOpts = [...newRoles.options]
-        .filter(x => x.selected)
-        .map(x => x.value);
+    const selectedOpts = [...newRoles.options].filter(x => x.selected).map(x => x.value);
+    const rolesJ = selectedOpts.map(role => rolesArr[role - 1]);
 
-    selectedOpts.forEach(
-        role => {
-            rolesJ.push(rolesArr[role - 1])
-        }
-    );
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            firstName: newFirstName.value,
+            lastName: newLastName.value,
+            age: newAge.value,
+            email: newEmail.value,
+            password: newPassword.value,
+            roles: rolesJ
+        })
+    })
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            } else {
+                throw new Error('Failed to create user');
+            }
+        })
+        .then(refreshListOfUsers)
+        .catch(err => console.log(err));
 
-    const fetchFunction = async () => {
-        const fetchedData = await
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    firstName: newFirstName.value,
-                    lastName: newLastName.value,
-                    age: newAge.value,
-                    email: newEmail.value,
-                    password: newPassword.value,
-                    roles: rolesJ
-                })
-            });
-
-        if (!fetchedData.ok) {
-            fetchedData.json()
-                .then(data => alert(data.message))
-        }
-        return fetchedData;
-    }
-
-    fetchFunction()
-        .then(response => response.json())
-        .catch(err => console.log(err))
-        .then(refreshListOfUsers);
     const navtab1 = document.getElementById('all-users-tab');
     const navtab2 = document.getElementById('new-user-tab');
     const tab1 = document.getElementById('all-users');
     const tab2 = document.getElementById('new-user');
 
-    navtab1.setAttribute("class", "nav-link active");
-    navtab2.setAttribute("class", "nav-link");
-    tab1.setAttribute("class", "tab-pane fade active show");
-    tab2.setAttribute("class", "tab-pane fade");
-
-})
-
-
+    navtab1.classList.add('active');
+    navtab2.classList.remove('active');
+    tab1.classList.add('show', 'active');
+    tab2.classList.remove('show', 'active');
+});
 
 editUserForm.addEventListener('submit', (e) => {
-    let rolesJ = [];
     e.preventDefault();
-    const selectedOpts = [...editRoles.options]
-        .filter(x => x.selected)
-        .map(x => x.value);
+    const selectedOpts = [...editRoles.options].filter(x => x.selected).map(x => x.value);
+    const rolesJ = selectedOpts.map(role => rolesArr[role - 1]);
 
-    selectedOpts.forEach(
-        role => {
-            rolesJ.push(rolesArr[role - 1])
-        }
-    );
-
-    const fetchFunction = async () => {
-        const fetchedData = await fetch(url + idForm, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                id: editId.value,
-                firstName: editFirstName.value,
-                lastName: editLastName.value,
-                age: editAge.value,
-                email: editEmail.value,
-                password: editPassword.value,
-                roles: rolesJ
-            })
-        });
-
-        if (!fetchedData.ok) {
-            fetchedData.json()
-                .then(data => alert(data.message))
-        }
-        return fetchedData;
-    }
-    fetchFunction()
-        .then(response => response.json)
+    fetch(url + idForm, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id: editId.value,
+            firstName: editFirstName.value,
+            lastName: editLastName.value,
+            age: editAge.value,
+            email: editEmail.value,
+            password: editPassword.value,
+            roles: rolesJ
+        })
+    })
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            } else {
+                throw new Error('Failed to edit user');
+            }
+        })
         .then(refreshListOfUsers)
+        .catch(err => console.log(err));
     editUserModal.hide();
-})
+});
