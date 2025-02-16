@@ -140,7 +140,7 @@ btnCreate.addEventListener('click', () => {
 
 deleteUserForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    fetch(url + delId.value, {
+    fetch(url + '/' + delId.value, {
         method: 'DELETE',
         headers: {
             'Content-type': 'application/json; charset=UTF-8'
@@ -184,18 +184,26 @@ newUserForm.addEventListener('submit', (e) => {
                 throw new Error('Failed to create user');
             }
         })
-        .then(refreshListOfUsers)
-        .catch(err => console.log(err));
+        .then(() => {
+            // Очистка формы
+            newFirstName.value = '';
+            newLastName.value = '';
+            newAge.value = '';
+            newEmail.value = '';
+            newPassword.value = '';
+            newRoles.options.selectedIndex = -1;
 
-    const navtab1 = document.getElementById('all-users-tab');
-    const navtab2 = document.getElementById('new-user-tab');
-    const tab1 = document.getElementById('all-users');
-    const tab2 = document.getElementById('new-user');
+            // Обновление списка пользователей
+            refreshListOfUsers();
 
-    navtab1.classList.add('active');
-    navtab2.classList.remove('active');
-    tab1.classList.add('show', 'active');
-    tab2.classList.remove('show', 'active');
+            // Переключение на вкладку "All Users"
+            const allUsersTab = new bootstrap.Tab(document.getElementById('all-users-tab'));
+            allUsersTab.show(); // Активируем вкладку "All Users"
+        })
+        .catch(err => {
+            console.error('Error:', err.message);
+            alert('Ошибка при создании пользователя: ' + err.message);
+        });
 });
 
 editUserForm.addEventListener('submit', (e) => {
@@ -203,7 +211,7 @@ editUserForm.addEventListener('submit', (e) => {
     const selectedOpts = [...editRoles.options].filter(x => x.selected).map(x => x.value);
     const rolesJ = selectedOpts.map(role => rolesArr[role - 1]);
 
-    fetch(url + idForm, {
+    fetch(url + '/' + editId.value, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'

@@ -27,7 +27,6 @@ public class User implements UserDetails {
     private Integer age;
 
     @Column(nullable = false)
-    @JsonIgnore
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
