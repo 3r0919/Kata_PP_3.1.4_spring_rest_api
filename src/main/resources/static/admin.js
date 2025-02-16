@@ -34,6 +34,7 @@ const newPassword = document.getElementById('newPassword');
 let rolesArr = [];
 
 const renderUsers = (users) => {
+    result = ''; // Очистите результат перед добавлением новых данных
     users.forEach(user => {
         let roles = '';
         user.roles.forEach(role => {
@@ -67,23 +68,54 @@ const renderRoles = (roles) => {
 };
 
 fetch(url)
-    .then(res => res.json())
-    .then(data => renderUsers(data))
-    .catch(error => console.log(error));
+    .then(res => {
+        if (!res.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return res.json();
+    })
+    .then(data => {
+        console.log('Data received:', data);
+        if (!Array.isArray(data)) {
+            throw new Error('Expected an array of users');
+        }
+        renderUsers(data);
+    })
+    .catch(error => console.error('Failed to fetch users:', error));
 
 fetch(urlRoles)
-    .then(res => res.json())
-    .then(data => renderRoles(data))
-    .catch(error => console.log(error));
+    .then(res => {
+        if (!res.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return res.json();
+    })
+    .then(data => {
+        console.log('Roles received:', data);
+        if (!Array.isArray(data)) {
+            throw new Error('Expected an array of roles');
+        }
+        renderRoles(data);
+    })
+    .catch(error => console.error('Failed to fetch roles:', error));
 
 const refreshListOfUsers = () => {
     fetch(url)
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return res.json();
+        })
         .then(data => {
+            console.log('Refreshing user list:', data);
+            if (!Array.isArray(data)) {
+                throw new Error('Expected an array of users');
+            }
             result = '';
             renderUsers(data);
         })
-        .catch(error => console.log(error));
+        .catch(error => console.error('Failed to fetch users:', error));
 };
 
 const on = (element, event, selector, handler) => {
@@ -148,15 +180,27 @@ deleteUserForm.addEventListener('submit', (e) => {
     })
         .then(res => {
             if (res.ok) {
-                return res.json();
+                console.log('User deleted successfully');
+                return res.text(); // Используем res.text() для получения текста ответа
             } else {
                 throw new Error('Failed to delete user');
             }
         })
-        .then(refreshListOfUsers)
-        .catch(err => console.log(err));
-    deleteUserModal.hide();
+        .then(text => {
+            console.log('Response text:', text);
+            // Обновляем список пользователей
+            refreshListOfUsers();
+        })
+        .then(() => {
+            // Закрываем модальное окно после обновления списка
+            deleteUserModal.hide();
+        })
+        .catch(err => {
+            console.error('Error:', err.message);
+            alert('Ошибка при удалении пользователя: ' + err.message);
+        });
 });
+
 
 newUserForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -197,7 +241,7 @@ newUserForm.addEventListener('submit', (e) => {
             refreshListOfUsers();
 
             // Переключение на вкладку "All Users"
-            const allUsersTab = new bootstrap.Tab(document.getElementById('all-users-tab'));
+            const allUsersTab = new bootstrap.Tab(document.getElementById('user-table-tab'));
             allUsersTab.show(); // Активируем вкладку "All Users"
         })
         .catch(err => {
