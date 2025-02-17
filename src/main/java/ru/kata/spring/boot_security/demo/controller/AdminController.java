@@ -48,13 +48,7 @@ public class AdminController {
     public ResponseEntity<User> saveUser(@PathVariable Long id, @RequestBody User updateUser) {
         User oldUser = userService.findById(id)
                 .orElseThrow(() -> new NoSuchUserException("User with id " + id + " not found"));
-        oldUser.setFirstName(updateUser.getFirstName());
-        oldUser.setLastName(updateUser.getLastName());
-        oldUser.setEmail(updateUser.getEmail());
-        oldUser.setPassword(updateUser.getPassword());
-        oldUser.setAge(updateUser.getAge());
-        oldUser.setRoles(updateUser.getRoles());
-
+        userService.updateUserFields(oldUser, updateUser);
         userService.update(oldUser);
         return new ResponseEntity<>(oldUser, HttpStatus.OK);
     }

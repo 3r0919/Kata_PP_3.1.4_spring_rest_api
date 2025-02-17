@@ -17,6 +17,6 @@ public interface UserService {
 
     Optional<User> findById(Long id);
 
-    Optional<User> findByEmail(String email);
+    void updateUserFields(User oldUser, User updateUser);
 
 }

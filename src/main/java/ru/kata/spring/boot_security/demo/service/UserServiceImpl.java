@@ -53,6 +53,15 @@ public class UserServiceImpl implements UserService {
         userRepository.save(existingUser);
     }
 
+    public void updateUserFields(User oldUser, User updateUser) {
+        oldUser.setFirstName(updateUser.getFirstName());
+        oldUser.setLastName(updateUser.getLastName());
+        oldUser.setEmail(updateUser.getEmail());
+        oldUser.setPassword(updateUser.getPassword());
+        oldUser.setAge(updateUser.getAge());
+        oldUser.setRoles(updateUser.getRoles());
+    }
+
     @Override
     @Transactional
     public void removeById(Long id) {
